@@ -18,7 +18,7 @@ import org.vaadin.example.model.UserData;
 import static java.util.Comparator.naturalOrder;
 
 // PhoneBook data provider
-public class PhoneBookDataProvider extends AbstractBackEndDataProvider<UserData, CrudFilter> {
+public class UserDataProvider extends AbstractBackEndDataProvider<UserData, CrudFilter> {
 
     // A real app should hook up something like JPA
 //    final List<PhoneBook> DATABASE = new ArrayList<>(DataService.getPeople());

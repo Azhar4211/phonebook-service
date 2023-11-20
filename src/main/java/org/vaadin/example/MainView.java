@@ -8,6 +8,7 @@ import com.vaadin.flow.component.crud.BinderCrudEditor;
 import com.vaadin.flow.component.crud.Crud;
 import com.vaadin.flow.component.crud.CrudEditor;
 import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -62,6 +63,15 @@ public class MainView extends VerticalLayout {
         add(textField, button);
 
     */
+    }
+
+    private Grid<UserData> createGrid() {
+        Grid<UserData> grid = new Grid<>();
+        Crud.addEditColumn(grid);
+        grid.addColumn(UserData::getName).setHeader("First name");
+        grid.addColumn(UserData::getEmail).setHeader("Email");
+
+        return grid;
     }
 
     private CrudEditor<UserData> createEditor() {
