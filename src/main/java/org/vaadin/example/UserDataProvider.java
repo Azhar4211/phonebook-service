@@ -108,29 +108,29 @@ public class UserDataProvider extends AbstractBackEndDataProvider<UserData, Crud
         }
     }
 
-    void persist(UserData item) {
-        if (item.getId() == null) {
-            item.setId(DATABASE.stream().map(UserData::getId).max(naturalOrder())
-                    .orElse(0) + 1);
-        }
-
-        final Optional<UserData> existingItem = find(item.getId());
-
-        if (existingItem.isPresent()) {
-            int position = DATABASE.indexOf(existingItem.get());
-            DATABASE.remove(existingItem.get());
-            DATABASE.add(position, item);
-        } else {
-            DATABASE.add(item);
-        }
-    }
-
-    Optional<UserData> find(Integer id) {
-        return DATABASE.stream().filter(entity -> entity.getId().equals(id))
-                .findFirst();
-    }
-
-    void delete(UserData item) {
-        DATABASE.removeIf(entity -> entity.getId().equals(item.getId()));
-    }
+//    void persist(UserData item) {
+//        if (item.getId() == null) {
+//            item.setId(DATABASE.stream().map(UserData::getId).max(naturalOrder())
+//                    .orElse(0) + 1);
+//        }
+//
+//        final Optional<UserData> existingItem = find(item.getId());
+//
+//        if (existingItem.isPresent()) {
+//            int position = DATABASE.indexOf(existingItem.get());
+//            DATABASE.remove(existingItem.get());
+//            DATABASE.add(position, item);
+//        } else {
+//            DATABASE.add(item);
+//        }
+//    }
+//
+//    Optional<UserData> find(Integer id) {
+//        return DATABASE.stream().filter(entity -> entity.getId().equals(id))
+//                .findFirst();
+//    }
+//
+//    void delete(UserData item) {
+//        DATABASE.removeIf(entity -> entity.getId().equals(item.getId()));
+//    }
 }

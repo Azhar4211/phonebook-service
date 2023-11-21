@@ -89,10 +89,10 @@ public class MainView extends VerticalLayout {
 
         FormLayout form = new FormLayout(name, lastName, street, city, country, phoneNumber, email);
 
-//        form.setColspan(email, 2);
-//        form.setMaxWidth("480px");
-//        form.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 1),
-//                new FormLayout.ResponsiveStep("30em", 2));
+        form.setColspan(email, 2);
+        form.setMaxWidth("480px");
+        form.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 1),
+                new FormLayout.ResponsiveStep("30em", 2));
 
         Binder<UserData> binder = new Binder<>(UserData.class);
 
@@ -106,9 +106,11 @@ public class MainView extends VerticalLayout {
                 UserData::setCity);
         binder.forField(country).asRequired().bind(UserData::getCountry,
                 UserData::setCountry);
+        binder.forField(phoneNumber).asRequired().bind(UserData::getPhoneNumber,
+                UserData::setPhoneNumber);
+
         binder.forField(email).asRequired().bind(UserData::getEmail,
                 UserData::setEmail);
-
 
         return new BinderCrudEditor<>(binder, form);
     }
@@ -118,9 +120,11 @@ public class MainView extends VerticalLayout {
                 + "</b> employees</span>");
 
         Button button = new Button("New User", VaadinIcon.PLUS.create());
+
         button.addClickListener(event -> {
             crud.edit(new UserData(), Crud.EditMode.NEW_ITEM);
         });
+
         button.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
         crud.setNewButton(button);
 

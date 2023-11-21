@@ -113,15 +113,12 @@ public class UserDataProviderInMemory extends AbstractBackEndDataProvider<UserDa
         if (item.getUserId() == null) {
             uuid = UUID.randomUUID().toString();
             item.setUserId(uuid);
-        }
-
-        Optional<UserData> userData = find(item.getUserId());
-
-        if(userData.isPresent()) {
-            DATABASE.replace(userData.get().getUserId(), item);
-            //DATABASE.put(userData.get().getUserId(), item);
-        } else {
             DATABASE.put(uuid, item);
+        } else {
+            Optional<UserData> userData = find(item.getUserId());
+            if(userData.isPresent()) {
+                DATABASE.replace(userData.get().getUserId(), item);
+            }
         }
     }
 
