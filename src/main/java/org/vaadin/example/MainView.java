@@ -16,10 +16,14 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.validator.EmailValidator;
 import com.vaadin.flow.router.Route;
 import org.vaadin.example.model.UserData;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.stream.Collectors;
 
 
 @Route("")
@@ -29,6 +33,11 @@ public class MainView extends VerticalLayout {
     private String FIRST_NAME = "name";
     private String LAST_NAME = "lastName";
     private String EMAIL = "email";
+
+    private UserData currentUser;
+
+    private final Set<String> uniquePhoneNumbers = new ConcurrentSkipListSet<>();
+
     UserDataProviderInMemory dataProvider = new UserDataProviderInMemory();
 
 
@@ -48,8 +57,12 @@ public class MainView extends VerticalLayout {
 
 
         Crud.removeEditColumn(grid);
-        grid.addItemDoubleClickListener(event -> crud.edit(event.getItem(),
-                Crud.EditMode.EXISTING_ITEM));
+        grid.addItemDoubleClickListener(event -> {
+                    crud.edit(event.getItem(), Crud.EditMode.EXISTING_ITEM);
+                    currentUser = event.getItem();
+        });
+
+        System.out.println("Current user: "+currentUser);
 
         // Only show these columns (all columns shown by default):
         List<String> visibleColumns = Arrays.asList(FIRST_NAME, LAST_NAME, EMAIL);
@@ -89,6 +102,7 @@ public class MainView extends VerticalLayout {
 
         FormLayout form = new FormLayout(name, lastName, street, city, country, phoneNumber, email);
 
+
         form.setColspan(email, 2);
         form.setMaxWidth("480px");
         form.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 1),
@@ -106,18 +120,30 @@ public class MainView extends VerticalLayout {
                 UserData::setCity);
         binder.forField(country).asRequired().bind(UserData::getCountry,
                 UserData::setCountry);
-        binder.forField(phoneNumber).asRequired().bind(UserData::getPhoneNumber,
-                UserData::setPhoneNumber);
 
-        binder.forField(email).asRequired().bind(UserData::getEmail,
+        binder.forField(email).withValidator(new EmailValidator("Not a valid email")).asRequired().bind(UserData::getEmail,
                 UserData::setEmail);
+
+        binder.forField(phoneNumber)
+                .withValidator(this::isPhoneNumberUnique, "Phone number must be unique")
+                .asRequired().bind(UserData::getPhoneNumber,
+                        UserData::setPhoneNumber);
 
         return new BinderCrudEditor<>(binder, form);
     }
 
+    private boolean isPhoneNumberUnique(String phoneNumber) {
+
+        return dataProvider.DATABASE.values().stream()
+                .noneMatch(userData -> userData.getPhoneNumber().equals(phoneNumber)
+                        && !userData.getPhoneNumber().equalsIgnoreCase(currentUser.getPhoneNumber()));
+
+        //return uniquePhoneNumbers.add(phoneNumber);
+    }
+
     private void setupToolbar() {
         Html total = new Html("<span>Total: <b>" + dataProvider.DATABASE.values().size()
-                + "</b> employees</span>");
+                + "</b> Users</span>");
 
         Button button = new Button("New User", VaadinIcon.PLUS.create());
 
