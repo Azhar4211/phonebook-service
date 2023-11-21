@@ -7,7 +7,6 @@ import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.crud.BinderCrudEditor;
 import com.vaadin.flow.component.crud.Crud;
 import com.vaadin.flow.component.crud.CrudEditor;
-import com.vaadin.flow.component.crud.CrudEditorPosition;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -22,19 +21,15 @@ import org.vaadin.example.model.UserData;
 import java.util.Arrays;
 import java.util.List;
 
-/**
- * The main view contains a text field for getting the user name and a button
- * that shows a greeting message in a notification.
- */
+
 @Route("")
 public class MainView extends VerticalLayout {
 
     private Crud<UserData> crud;
-
     private String FIRST_NAME = "name";
     private String LAST_NAME = "lastName";
     private String EMAIL = "email";
-    UserDataProvider dataProvider = new UserDataProvider();
+    UserDataProviderInMemory dataProvider = new UserDataProviderInMemory();
 
 
     public MainView() {
@@ -44,14 +39,17 @@ public class MainView extends VerticalLayout {
         setupGrid();
         setupDataProvider();
         setupToolbar();
-
-
         add(crud);
 
     }
 
     private void setupGrid() {
         Grid<UserData> grid = crud.getGrid();
+
+
+        Crud.removeEditColumn(grid);
+        grid.addItemDoubleClickListener(event -> crud.edit(event.getItem(),
+                Crud.EditMode.EXISTING_ITEM));
 
         // Only show these columns (all columns shown by default):
         List<String> visibleColumns = Arrays.asList(FIRST_NAME, LAST_NAME, EMAIL);
@@ -69,13 +67,14 @@ public class MainView extends VerticalLayout {
     }
 
     private void setupDataProvider() {
-        UserDataProvider dataProvider = new UserDataProvider();
+
         crud.setDataProvider(dataProvider);
+
         crud.addDeleteListener(
                 deleteEvent -> dataProvider.delete(deleteEvent.getItem()));
+
         crud.addSaveListener(
                 saveEvent -> dataProvider.persist(saveEvent.getItem()));
-        crud.setEditorPosition(CrudEditorPosition.ASIDE);
 
     }
 
@@ -90,12 +89,13 @@ public class MainView extends VerticalLayout {
 
         FormLayout form = new FormLayout(name, lastName, street, city, country, phoneNumber, email);
 
-        form.setColspan(email, 2);
-        form.setMaxWidth("480px");
-        form.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 1),
-                new FormLayout.ResponsiveStep("30em", 2));
+//        form.setColspan(email, 2);
+//        form.setMaxWidth("480px");
+//        form.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 1),
+//                new FormLayout.ResponsiveStep("30em", 2));
 
         Binder<UserData> binder = new Binder<>(UserData.class);
+
         binder.forField(name).asRequired().bind(UserData::getName,
                 UserData::setName);
         binder.forField(lastName).asRequired().bind(UserData::getLastName,
@@ -114,7 +114,7 @@ public class MainView extends VerticalLayout {
     }
 
     private void setupToolbar() {
-        Html total = new Html("<span>Total: <b>" + dataProvider.DATABASE.size()
+        Html total = new Html("<span>Total: <b>" + dataProvider.DATABASE.values().size()
                 + "</b> employees</span>");
 
         Button button = new Button("New User", VaadinIcon.PLUS.create());

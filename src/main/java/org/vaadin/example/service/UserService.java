@@ -5,18 +5,12 @@ import org.vaadin.example.model.UserData;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
-public class UserService {
+public interface UserService {
 
-    public static List<UserData> getAllUsers(){
-        UserData userData = new UserData("Azhar", "Ali", "john.doe@example.com");
-        UserData userData2 = new UserData("Anas", "Tayyab", "john.doe2@2222example.com");
+    List<UserData> getAllUsers();
 
-        List<UserData> users = new ArrayList<>();
-        users.add(userData);
-        users.add(userData2);
-
-        return users;
-    }
+    Map<String, UserData> getAllInMemoryUsers();
 
 }

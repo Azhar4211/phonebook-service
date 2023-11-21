@@ -1,33 +1,33 @@
 package org.vaadin.example;
 
-import java.lang.reflect.Field;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
-import java.util.stream.Stream;
-
 import com.vaadin.flow.component.crud.CrudFilter;
 import com.vaadin.flow.data.provider.AbstractBackEndDataProvider;
 import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.provider.SortDirection;
+import org.apache.commons.lang3.StringUtils;
 import org.vaadin.example.model.UserData;
 import org.vaadin.example.service.UserService;
 import org.vaadin.example.service.UserServiceImpl;
 
+import java.lang.reflect.Field;
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
+
 import static java.util.Comparator.naturalOrder;
 
-public class UserDataProvider extends AbstractBackEndDataProvider<UserData, CrudFilter> {
+public class UserDataProviderInMemory extends AbstractBackEndDataProvider<UserData, CrudFilter> {
 
 
-    final List<UserData> DATABASE;
-    private final UserService userService;
+    final Map<String, UserData> DATABASE;
+
+    private UserService userService;
     private Consumer<Long> sizeChangeListener;
 
-    public UserDataProvider() {
+    public UserDataProviderInMemory() {
         userService = new UserServiceImpl();
-        DATABASE = userService.getAllUsers();
+        DATABASE = userService.getAllInMemoryUsers();
     }
 
 
@@ -37,7 +37,7 @@ public class UserDataProvider extends AbstractBackEndDataProvider<UserData, Crud
         int offset = query.getOffset();
         int limit = query.getLimit();
 
-        Stream<UserData> stream = DATABASE.stream();
+        Stream<UserData> stream = DATABASE.values().stream();
 
         if (query.getFilter().isPresent()) {
             stream = stream.filter(predicate(query.getFilter().get()))
@@ -108,29 +108,28 @@ public class UserDataProvider extends AbstractBackEndDataProvider<UserData, Crud
         }
     }
 
-    void persist(UserData item) {
-        if (item.getId() == null) {
-            item.setId(DATABASE.stream().map(UserData::getId).max(naturalOrder())
-                    .orElse(0) + 1);
+    public void persist(UserData item) {
+        String uuid = StringUtils.EMPTY;
+        if (item.getUserId() == null) {
+            uuid = UUID.randomUUID().toString();
+            item.setUserId(uuid);
         }
 
-        final Optional<UserData> existingItem = find(item.getId());
+        Optional<UserData> userData = find(item.getUserId());
 
-        if (existingItem.isPresent()) {
-            int position = DATABASE.indexOf(existingItem.get());
-            DATABASE.remove(existingItem.get());
-            DATABASE.add(position, item);
+        if(userData.isPresent()) {
+            DATABASE.replace(userData.get().getUserId(), item);
+            //DATABASE.put(userData.get().getUserId(), item);
         } else {
-            DATABASE.add(item);
+            DATABASE.put(uuid, item);
         }
     }
 
-    Optional<UserData> find(Integer id) {
-        return DATABASE.stream().filter(entity -> entity.getId().equals(id))
-                .findFirst();
+    Optional<UserData> find(String userId) {
+        return Optional.of(DATABASE.get(userId));
     }
 
-    void delete(UserData item) {
-        DATABASE.removeIf(entity -> entity.getId().equals(item.getId()));
+    public void delete(UserData userData) {
+        DATABASE.remove(userData.getUserId());
     }
 }
