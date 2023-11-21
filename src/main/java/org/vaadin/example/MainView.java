@@ -2,6 +2,7 @@ package org.vaadin.example;
 
 
 import com.vaadin.flow.component.Html;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.crud.BinderCrudEditor;
@@ -58,11 +59,24 @@ public class MainView extends VerticalLayout {
 
         Crud.removeEditColumn(grid);
         grid.addItemDoubleClickListener(event -> {
-                    crud.edit(event.getItem(), Crud.EditMode.EXISTING_ITEM);
-                    currentUser = event.getItem();
+            currentUser = event.getItem();
+            crud.edit(event.getItem(), Crud.EditMode.EXISTING_ITEM);
+
+            UI ui = UI.getCurrent();
+
+            // Get the client ID
+            String clientId = String.valueOf(ui.getId());
+
+            // Get the CSRF token
+            String csrfToken = ui.getCsrfToken();
+
+            // Log or use the client ID and CSRF token as needed
+            System.out.println("Client ID: " + clientId);
+            System.out.println("CSRF Token: " + csrfToken);
+
         });
 
-        System.out.println("Current user: "+currentUser);
+
 
         // Only show these columns (all columns shown by default):
         List<String> visibleColumns = Arrays.asList(FIRST_NAME, LAST_NAME, EMAIL);
@@ -124,6 +138,7 @@ public class MainView extends VerticalLayout {
         binder.forField(email).withValidator(new EmailValidator("Not a valid email")).asRequired().bind(UserData::getEmail,
                 UserData::setEmail);
 
+
         binder.forField(phoneNumber)
                 .withValidator(this::isPhoneNumberUnique, "Phone number must be unique")
                 .asRequired().bind(UserData::getPhoneNumber,
@@ -135,8 +150,8 @@ public class MainView extends VerticalLayout {
     private boolean isPhoneNumberUnique(String phoneNumber) {
 
         return dataProvider.DATABASE.values().stream()
-                .noneMatch(userData -> userData.getPhoneNumber().equals(phoneNumber)
-                        && !userData.getPhoneNumber().equalsIgnoreCase(currentUser.getPhoneNumber()));
+            .noneMatch(userData -> userData.getPhoneNumber().equals(phoneNumber)
+                    && !userData.getPhoneNumber().equalsIgnoreCase(currentUser.getPhoneNumber()));
 
         //return uniquePhoneNumbers.add(phoneNumber);
     }
