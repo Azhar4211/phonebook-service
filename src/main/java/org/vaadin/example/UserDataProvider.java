@@ -25,7 +25,7 @@ public class UserDataProvider extends AbstractBackEndDataProvider<UserData, Crud
 //    final List<PhoneBook> DATABASE = new ArrayList<>(DataService.getPeople());
 
 
-    private List<UserData> DATABASE = new ArrayList<>(UserService.getAllUsers());
+    final List<UserData> DATABASE = new ArrayList<>(UserService.getAllUsers());
 
     private Consumer<Long> sizeChangeListener;
 

@@ -1,23 +1,24 @@
 package org.vaadin.example;
 
-import com.vaadin.flow.component.Key;
+
+import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.crud.BinderCrudEditor;
 import com.vaadin.flow.component.crud.Crud;
 import com.vaadin.flow.component.crud.CrudEditor;
+import com.vaadin.flow.component.crud.CrudEditorPosition;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.html.Paragraph;
-import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.router.Route;
 import org.vaadin.example.model.UserData;
-
 import java.util.Arrays;
 import java.util.List;
 
@@ -33,15 +34,16 @@ public class MainView extends VerticalLayout {
     private String FIRST_NAME = "name";
     private String LAST_NAME = "lastName";
     private String EMAIL = "email";
-
+    UserDataProvider dataProvider = new UserDataProvider();
 
 
     public MainView() {
 
-
         crud = new Crud<>(UserData.class, createEditor());
-        setupDataProvider();
+
         setupGrid();
+        setupDataProvider();
+        setupToolbar();
 
 
         add(crud);
@@ -73,14 +75,21 @@ public class MainView extends VerticalLayout {
                 deleteEvent -> dataProvider.delete(deleteEvent.getItem()));
         crud.addSaveListener(
                 saveEvent -> dataProvider.persist(saveEvent.getItem()));
+        crud.setEditorPosition(CrudEditorPosition.ASIDE);
+
     }
 
     private CrudEditor<UserData> createEditor() {
-        TextField name = new TextField("Name");
-        TextField lastName = new TextField("Last Name");
+        TextField name = new TextField("First name");
+        TextField lastName = new TextField("Last name");
+        TextField street = new TextField("Street");
+        TextField city = new TextField("City");
+        TextField country = new TextField("Country");
+        TextField phoneNumber = new TextField("Phone Number");
         EmailField email = new EmailField("Email");
 
-        FormLayout form = new FormLayout(name);
+        FormLayout form = new FormLayout(name, lastName, street, city, country, phoneNumber, email);
+
         form.setColspan(email, 2);
         form.setMaxWidth("480px");
         form.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 1),
@@ -89,8 +98,36 @@ public class MainView extends VerticalLayout {
         Binder<UserData> binder = new Binder<>(UserData.class);
         binder.forField(name).asRequired().bind(UserData::getName,
                 UserData::setName);
+        binder.forField(lastName).asRequired().bind(UserData::getLastName,
+                UserData::setLastName);
+        binder.forField(street).asRequired().bind(UserData::getStreet,
+                UserData::setStreet);
+        binder.forField(city).asRequired().bind(UserData::getCity,
+                UserData::setCity);
+        binder.forField(country).asRequired().bind(UserData::getCountry,
+                UserData::setCountry);
         binder.forField(email).asRequired().bind(UserData::getEmail,
                 UserData::setEmail);
+
+
         return new BinderCrudEditor<>(binder, form);
+    }
+
+    private void setupToolbar() {
+        Html total = new Html("<span>Total: <b>" + dataProvider.DATABASE.size()
+                + "</b> employees</span>");
+
+        Button button = new Button("New User", VaadinIcon.PLUS.create());
+        button.addClickListener(event -> {
+            crud.edit(new UserData(), Crud.EditMode.NEW_ITEM);
+        });
+        button.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+        crud.setNewButton(button);
+
+        HorizontalLayout toolbar = new HorizontalLayout(total);
+        toolbar.setAlignItems(FlexComponent.Alignment.CENTER);
+        toolbar.setFlexGrow(1, toolbar);
+        toolbar.setSpacing(false);
+        crud.setToolbar(toolbar);
     }
 }
