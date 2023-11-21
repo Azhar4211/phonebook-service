@@ -5,11 +5,14 @@ package org.vaadin.example.model;
 public class UserData {
     private Integer id;
     private String name;
+    private String lastName;
+    private String email;
+
+
     private String street;
 	private String city;
 	private String country;
 	private String phoneNumber;
-	private String email;
     private String address;
 
 
@@ -26,6 +29,20 @@ public class UserData {
         this.phoneNumber = phoneNumber;
         this.email = email;
         this.address = address;
+    }
+
+    public UserData(String name, String lastName, String email) {
+        this.name = name;
+        this.lastName = lastName;
+        this.email = email;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 
     public Integer getId() {

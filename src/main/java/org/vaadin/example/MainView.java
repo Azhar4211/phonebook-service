@@ -18,6 +18,9 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.router.Route;
 import org.vaadin.example.model.UserData;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * The main view contains a text field for getting the user name and a button
  * that shows a greeting message in a notification.
@@ -25,53 +28,51 @@ import org.vaadin.example.model.UserData;
 @Route("")
 public class MainView extends VerticalLayout {
 
+    private Crud<UserData> crud;
+
+    private String FIRST_NAME = "name";
+    private String LAST_NAME = "lastName";
+    private String EMAIL = "email";
+
+
+
     public MainView() {
 
 
-        var crud = new Crud<>(UserData.class, createEditor());
+        crud = new Crud<>(UserData.class, createEditor());
+        setupDataProvider();
+        setupGrid();
+
 
         add(crud);
 
-
-
-
-
-
-
-/*
-        // Use TextField for standard text input
-        TextField textField = new TextField("Your name");
-        textField.addClassName("bordered");
-        // Button click listeners can be defined as lambda expressions
-        GreetService greetService = new GreetService();
-        Button button = new Button("Say hello", e -> {
-            add(new Paragraph(greetService.greet(textField.getValue())));
-        });
-
-        // Theme variants give you predefined extra styles for components.
-        // Example: Primary button is more prominent look.
-        button.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-
-        // You can specify keyboard shortcuts for buttons.
-        // Example: Pressing enter in this view clicks the Button.
-        button.addClickShortcut(Key.ENTER);
-
-        // Use custom CSS classes to apply styling. This is defined in
-        // styles.css.
-        addClassName("centered-content");
-
-        add(textField, button);
-
-    */
     }
 
-    private Grid<UserData> createGrid() {
-        Grid<UserData> grid = new Grid<>();
-        Crud.addEditColumn(grid);
-        grid.addColumn(UserData::getName).setHeader("First name");
-        grid.addColumn(UserData::getEmail).setHeader("Email");
+    private void setupGrid() {
+        Grid<UserData> grid = crud.getGrid();
 
-        return grid;
+        // Only show these columns (all columns shown by default):
+        List<String> visibleColumns = Arrays.asList(FIRST_NAME, LAST_NAME, EMAIL);
+        grid.getColumns().forEach(column -> {
+            String key = column.getKey();
+            if (!visibleColumns.contains(key)) {
+                grid.removeColumn(column);
+            }
+        });
+
+        // Reorder the columns (alphabetical by default)
+        grid.setColumnOrder(grid.getColumnByKey(FIRST_NAME),
+                grid.getColumnByKey(LAST_NAME),
+                grid.getColumnByKey(EMAIL));
+    }
+
+    private void setupDataProvider() {
+        UserDataProvider dataProvider = new UserDataProvider();
+        crud.setDataProvider(dataProvider);
+        crud.addDeleteListener(
+                deleteEvent -> dataProvider.delete(deleteEvent.getItem()));
+        crud.addSaveListener(
+                saveEvent -> dataProvider.persist(saveEvent.getItem()));
     }
 
     private CrudEditor<UserData> createEditor() {

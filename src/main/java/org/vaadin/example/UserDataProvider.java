@@ -14,6 +14,7 @@ import com.vaadin.flow.data.provider.AbstractBackEndDataProvider;
 import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.provider.SortDirection;
 import org.vaadin.example.model.UserData;
+import org.vaadin.example.service.UserService;
 
 import static java.util.Comparator.naturalOrder;
 
@@ -24,7 +25,7 @@ public class UserDataProvider extends AbstractBackEndDataProvider<UserData, Crud
 //    final List<PhoneBook> DATABASE = new ArrayList<>(DataService.getPeople());
 
 
-    private List<UserData> DATABASE = new ArrayList<>();
+    private List<UserData> DATABASE = new ArrayList<>(UserService.getAllUsers());
 
     private Consumer<Long> sizeChangeListener;
 
@@ -32,10 +33,6 @@ public class UserDataProvider extends AbstractBackEndDataProvider<UserData, Crud
 
     @Override
     protected Stream<UserData> fetchFromBackEnd(Query<UserData, CrudFilter> query) {
-        UserData userData = new UserData(1, "John Doe", "123 Street", "Cityville", "Countryland",
-                "1234567890", "john.doe@example.com", "123 Street, Cityville, Countryland");
-
-        DATABASE.add(userData);
 
         int offset = query.getOffset();
         int limit = query.getLimit();
