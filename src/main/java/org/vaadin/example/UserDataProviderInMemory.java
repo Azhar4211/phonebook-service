@@ -8,6 +8,7 @@ import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.provider.SortDirection;
 import org.vaadin.example.model.UserData;
 import org.vaadin.example.service.UserDataService;
+import org.vaadin.example.service.UserDataServiceImpl;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -17,16 +18,14 @@ import java.util.stream.Stream;
 
 public class UserDataProviderInMemory extends AbstractBackEndDataProvider<UserData, CrudFilter> {
 
-    private static final UserDataService USER_DATA_SERVICE = new UserDataService();
+    //private static final UserDataServiceImpl USER_DATA_SERVICE = new UserDataServiceImpl();
 
+    private static final UserDataService USER_DATA_SERVICE = new UserDataServiceImpl();
     private Consumer<Long> sizeChangeListener;
 
-    private final Map<String, Set<String>> editedRecords = new HashMap<>();
-
-    private final List<String> loggedInUser = new ArrayList<>();
 
     public Map<String, UserData> getMap(){
-        return  USER_DATA_SERVICE.getUserMap();
+        return  USER_DATA_SERVICE.getMap();
     }
 
     @Override
@@ -35,7 +34,7 @@ public class UserDataProviderInMemory extends AbstractBackEndDataProvider<UserDa
         int offset = query.getOffset();
         int limit = query.getLimit();
 
-        Stream<UserData> stream = USER_DATA_SERVICE.getUserMap().values().stream();
+        Stream<UserData> stream = USER_DATA_SERVICE.getMap().values().stream();
 
         if (query.getFilter().isPresent()) {
             stream = stream.filter(predicate(query.getFilter().get()))
@@ -112,14 +111,14 @@ public class UserDataProviderInMemory extends AbstractBackEndDataProvider<UserDa
         if (item.getUserId() == null) {
             uuid = UUID.randomUUID().toString();
             item.setUserId(uuid);
-            USER_DATA_SERVICE.getUserMap().put(uuid, item);
+            USER_DATA_SERVICE.getMap().put(uuid, item);
         } else {
             Optional<UserData> userData = find(item.getUserId());
             if(userData.isPresent()) {
 
                 if(userData.get().getVersion().equals(item.getVersion())) {
                     item.setVersion(item.getVersion()+1);
-                    USER_DATA_SERVICE.getUserMap().replace(userData.get().getUserId(), item);
+                    USER_DATA_SERVICE.getMap().replace(userData.get().getUserId(), item);
                 } else {
                     ConfirmDialog dialog = new ConfirmDialog();
                     dialog.setHeader("User rights Violation");
@@ -136,14 +135,12 @@ public class UserDataProviderInMemory extends AbstractBackEndDataProvider<UserDa
         }
     }
 
-
-
     Optional<UserData> find(String userId) {
-        return Optional.of( USER_DATA_SERVICE.getUserMap().get(userId));
+        return Optional.of( USER_DATA_SERVICE.getMap().get(userId));
     }
 
     public void delete(UserData userData) {
-        if(USER_DATA_SERVICE.getUserMap().remove(userData.getUserId()) == null) {
+        if(USER_DATA_SERVICE.getMap().remove(userData.getUserId()) == null) {
             ConfirmDialog dialog = new ConfirmDialog();
             dialog.setHeader("Data deleted");
             dialog.setText(new Html(
