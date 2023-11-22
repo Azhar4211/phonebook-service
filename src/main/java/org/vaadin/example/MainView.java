@@ -2,7 +2,6 @@ package org.vaadin.example;
 
 
 import com.vaadin.flow.component.Html;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.crud.BinderCrudEditor;
@@ -24,9 +23,6 @@ import org.vaadin.example.model.UserData;
 import java.util.Arrays;
 import java.util.List;
 
-
-
-
 @Route("")
 public class MainView extends VerticalLayout {
 
@@ -41,7 +37,6 @@ public class MainView extends VerticalLayout {
 
 
     public MainView() {
-        System.out.println("This function executes: Main");
         crud = new Crud<>(UserData.class, createEditor());
 
         setupGrid();
@@ -49,7 +44,6 @@ public class MainView extends VerticalLayout {
         setupToolbar();
         add(new H1("Phone Book Application"));
         add(crud);
-
 
     }
 
