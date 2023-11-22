@@ -4,7 +4,6 @@ import com.vaadin.flow.component.crud.CrudFilter;
 import com.vaadin.flow.data.provider.AbstractBackEndDataProvider;
 import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.provider.SortDirection;
-import org.apache.commons.lang3.StringUtils;
 import org.vaadin.example.model.UserData;
 import org.vaadin.example.service.UserService;
 import org.vaadin.example.service.UserServiceImpl;
@@ -15,21 +14,19 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import static java.util.Comparator.naturalOrder;
-
 public class UserDataProviderInMemory extends AbstractBackEndDataProvider<UserData, CrudFilter> {
 
 
-    final Map<String, UserData> DATABASE;
+//    final Map<String, UserData> DATABASE;
 
-    private UserService userService;
+
+    private static final UserServiceImpl userServiceImpl = new UserServiceImpl();
+
     private Consumer<Long> sizeChangeListener;
 
-    public UserDataProviderInMemory() {
-        userService = new UserServiceImpl();
-        DATABASE = userService.getAllInMemoryUsers();
+    public Map<String, UserData> getMap(){
+        return  userServiceImpl.getUserMap();
     }
-
 
     @Override
     protected Stream<UserData> fetchFromBackEnd(Query<UserData, CrudFilter> query) {
@@ -37,7 +34,7 @@ public class UserDataProviderInMemory extends AbstractBackEndDataProvider<UserDa
         int offset = query.getOffset();
         int limit = query.getLimit();
 
-        Stream<UserData> stream = DATABASE.values().stream();
+        Stream<UserData> stream = userServiceImpl.getUserMap().values().stream();
 
         if (query.getFilter().isPresent()) {
             stream = stream.filter(predicate(query.getFilter().get()))
@@ -113,20 +110,20 @@ public class UserDataProviderInMemory extends AbstractBackEndDataProvider<UserDa
         if (item.getUserId() == null) {
             uuid = UUID.randomUUID().toString();
             item.setUserId(uuid);
-            DATABASE.put(uuid, item);
+            userServiceImpl.getUserMap().put(uuid, item);
         } else {
             Optional<UserData> userData = find(item.getUserId());
             if(userData.isPresent()) {
-                DATABASE.replace(userData.get().getUserId(), item);
+                userServiceImpl.getUserMap().replace(userData.get().getUserId(), item);
             }
         }
     }
 
     Optional<UserData> find(String userId) {
-        return Optional.of(DATABASE.get(userId));
+        return Optional.of( userServiceImpl.getUserMap().get(userId));
     }
 
     public void delete(UserData userData) {
-        DATABASE.remove(userData.getUserId());
+        userServiceImpl.getUserMap().remove(userData.getUserId());
     }
 }

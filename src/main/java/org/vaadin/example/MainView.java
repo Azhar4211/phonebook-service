@@ -10,6 +10,7 @@ import com.vaadin.flow.component.crud.Crud;
 import com.vaadin.flow.component.crud.CrudEditor;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -22,9 +23,8 @@ import com.vaadin.flow.router.Route;
 import org.vaadin.example.model.UserData;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ConcurrentSkipListSet;
-import java.util.stream.Collectors;
+
+
 
 
 @Route("")
@@ -37,25 +37,24 @@ public class MainView extends VerticalLayout {
 
     private UserData currentUser;
 
-    private final Set<String> uniquePhoneNumbers = new ConcurrentSkipListSet<>();
-
-    UserDataProviderInMemory dataProvider = new UserDataProviderInMemory();
+    private final UserDataProviderInMemory dataProvider = new UserDataProviderInMemory();
 
 
     public MainView() {
-
+        System.out.println("This function executes: Main");
         crud = new Crud<>(UserData.class, createEditor());
 
         setupGrid();
         setupDataProvider();
         setupToolbar();
+        add(new H1("Phone Book Application"));
         add(crud);
+
 
     }
 
     private void setupGrid() {
         Grid<UserData> grid = crud.getGrid();
-
 
         Crud.removeEditColumn(grid);
         grid.addItemDoubleClickListener(event -> {
@@ -75,8 +74,6 @@ public class MainView extends VerticalLayout {
             System.out.println("CSRF Token: " + csrfToken);
 
         });
-
-
 
         // Only show these columns (all columns shown by default):
         List<String> visibleColumns = Arrays.asList(FIRST_NAME, LAST_NAME, EMAIL);
@@ -102,6 +99,7 @@ public class MainView extends VerticalLayout {
 
         crud.addSaveListener(
                 saveEvent -> dataProvider.persist(saveEvent.getItem()));
+
 
     }
 
@@ -149,7 +147,7 @@ public class MainView extends VerticalLayout {
 
     private boolean isPhoneNumberUnique(String phoneNumber) {
 
-        return dataProvider.DATABASE.values().stream()
+        return dataProvider.getMap().values().stream()
             .noneMatch(userData -> userData.getPhoneNumber().equals(phoneNumber)
                     && !userData.getPhoneNumber().equalsIgnoreCase(currentUser.getPhoneNumber()));
 
@@ -157,7 +155,7 @@ public class MainView extends VerticalLayout {
     }
 
     private void setupToolbar() {
-        Html total = new Html("<span>Total: <b>" + dataProvider.DATABASE.values().size()
+        Html total = new Html("<span>Total: <b>" + dataProvider.getMap().values().size()
                 + "</b> Users</span>");
 
         Button button = new Button("New User", VaadinIcon.PLUS.create());
