@@ -8,7 +8,7 @@ import java.util.Objects;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserData {
+public class UserData implements Cloneable {
 
     private Integer id;
     private String name;
@@ -20,6 +20,7 @@ public class UserData {
 	private String phoneNumber;
     private String address;
     private String userId;
+    private Integer version;
 
 
     public UserData(String name, String lastName, String email, String userId) {
@@ -29,4 +30,13 @@ public class UserData {
         this.userId = userId;
     }
 
+    @Override
+    public UserData clone() {
+        try {
+            UserData clone = (UserData) super.clone();
+            return clone;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
+    }
 }

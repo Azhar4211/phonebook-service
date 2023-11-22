@@ -1,11 +1,14 @@
 package org.vaadin.example;
 
+import com.vaadin.flow.component.Html;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.crud.CrudFilter;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.data.provider.AbstractBackEndDataProvider;
 import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.provider.SortDirection;
 import org.vaadin.example.model.UserData;
-import org.vaadin.example.service.UserService;
 import org.vaadin.example.service.UserServiceImpl;
 
 import java.lang.reflect.Field;
@@ -16,13 +19,13 @@ import java.util.stream.Stream;
 
 public class UserDataProviderInMemory extends AbstractBackEndDataProvider<UserData, CrudFilter> {
 
-
-//    final Map<String, UserData> DATABASE;
-
-
     private static final UserServiceImpl userServiceImpl = new UserServiceImpl();
 
     private Consumer<Long> sizeChangeListener;
+
+    private final Map<String, Set<String>> editedRecords = new HashMap<>();
+
+    private final List<String> loggedInUser = new ArrayList<>();
 
     public Map<String, UserData> getMap(){
         return  userServiceImpl.getUserMap();
@@ -107,6 +110,7 @@ public class UserDataProviderInMemory extends AbstractBackEndDataProvider<UserDa
 
     public void persist(UserData item) {
         String uuid;
+
         if (item.getUserId() == null) {
             uuid = UUID.randomUUID().toString();
             item.setUserId(uuid);
@@ -114,16 +118,39 @@ public class UserDataProviderInMemory extends AbstractBackEndDataProvider<UserDa
         } else {
             Optional<UserData> userData = find(item.getUserId());
             if(userData.isPresent()) {
-                userServiceImpl.getUserMap().replace(userData.get().getUserId(), item);
+
+                if(userData.get().getVersion().equals(item.getVersion())) {
+                    item.setVersion(item.getVersion()+1);
+                    userServiceImpl.getUserMap().replace(userData.get().getUserId(), item);
+                } else {
+                    ConfirmDialog dialog = new ConfirmDialog();
+                    dialog.setHeader("Export failed");
+                    dialog.setText(new Html(
+                            "<p>This data has already modified from another user" +
+                                    "</p>"));
+
+                    dialog.setConfirmText("OK");
+                    dialog.open();
+
+                }
+
             }
         }
     }
+
+
 
     Optional<UserData> find(String userId) {
         return Optional.of( userServiceImpl.getUserMap().get(userId));
     }
 
     public void delete(UserData userData) {
-        userServiceImpl.getUserMap().remove(userData.getUserId());
+        if(userServiceImpl.getUserMap().remove(userData.getUserId()) == null) {
+            Notification.show("This user has alread deleted");
+        }
+    }
+
+    public Boolean isUserAlreadyExist(String userToken){
+        return editedRecords.containsKey(userToken);
     }
 }

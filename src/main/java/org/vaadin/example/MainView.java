@@ -58,21 +58,10 @@ public class MainView extends VerticalLayout {
 
         Crud.removeEditColumn(grid);
         grid.addItemDoubleClickListener(event -> {
-            currentUser = event.getItem();
-            crud.edit(event.getItem(), Crud.EditMode.EXISTING_ITEM);
 
-            UI ui = UI.getCurrent();
-
-            // Get the client ID
-            String clientId = String.valueOf(ui.getId());
-
-            // Get the CSRF token
-            String csrfToken = ui.getCsrfToken();
-
-            // Log or use the client ID and CSRF token as needed
-            System.out.println("Client ID: " + clientId);
-            System.out.println("CSRF Token: " + csrfToken);
-
+            UserData cloned = event.getItem().clone();
+            currentUser = cloned;
+            crud.edit(cloned, Crud.EditMode.EXISTING_ITEM);
         });
 
         // Only show these columns (all columns shown by default):
@@ -150,8 +139,6 @@ public class MainView extends VerticalLayout {
         return dataProvider.getMap().values().stream()
             .noneMatch(userData -> userData.getPhoneNumber().equals(phoneNumber)
                     && !userData.getPhoneNumber().equalsIgnoreCase(currentUser.getPhoneNumber()));
-
-        //return uniquePhoneNumbers.add(phoneNumber);
     }
 
     private void setupToolbar() {
