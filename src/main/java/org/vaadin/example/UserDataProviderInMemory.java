@@ -124,7 +124,7 @@ public class UserDataProviderInMemory extends AbstractBackEndDataProvider<UserDa
                     userServiceImpl.getUserMap().replace(userData.get().getUserId(), item);
                 } else {
                     ConfirmDialog dialog = new ConfirmDialog();
-                    dialog.setHeader("Export failed");
+                    dialog.setHeader("User rights Violation");
                     dialog.setText(new Html(
                             "<p>This data has already modified from another user" +
                                     "</p>"));
@@ -146,11 +146,14 @@ public class UserDataProviderInMemory extends AbstractBackEndDataProvider<UserDa
 
     public void delete(UserData userData) {
         if(userServiceImpl.getUserMap().remove(userData.getUserId()) == null) {
-            Notification.show("This user has alread deleted");
-        }
-    }
+            ConfirmDialog dialog = new ConfirmDialog();
+            dialog.setHeader("Data deleted");
+            dialog.setText(new Html(
+                    "<p>This data has already deleted By another user" +
+                            "</p>"));
 
-    public Boolean isUserAlreadyExist(String userToken){
-        return editedRecords.containsKey(userToken);
+            dialog.setConfirmText("OK");
+            dialog.open();
+        }
     }
 }
