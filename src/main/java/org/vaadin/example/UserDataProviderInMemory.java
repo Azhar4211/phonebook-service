@@ -109,7 +109,7 @@ public class UserDataProviderInMemory extends AbstractBackEndDataProvider<UserDa
     }
 
     public void persist(UserData item) {
-        String uuid = StringUtils.EMPTY;
+        String uuid;
         if (item.getUserId() == null) {
             uuid = UUID.randomUUID().toString();
             item.setUserId(uuid);
