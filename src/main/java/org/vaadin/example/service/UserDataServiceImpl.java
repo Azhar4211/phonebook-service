@@ -46,4 +46,34 @@ public class UserDataServiceImpl implements UserDataService{
         return  userMap;
     }
 
+    public void persist(UserData item) {
+        String uuid;
+
+        if (item.getUserId() == null) {
+            uuid = UUID.randomUUID().toString();
+            item.setUserId(uuid);
+            item.setVersion(0);
+            userMap.put(uuid, item);
+        } else {
+            Optional<UserData> userData = find(item.getUserId());
+            if(userData.isPresent()) {
+
+                if(userData.get().getVersion().equals(item.getVersion())) {
+                    item.setVersion(item.getVersion()+1);
+                    userMap.replace(userData.get().getUserId(), item);
+                } else {
+                    ConfirmDialog dialog = new ConfirmDialog();
+                    dialog.setHeader("User rights Violation");
+                    dialog.setText(new Html(
+                            "<p>This data has already modified from another user" +
+                                    "</p>"));
+
+                    dialog.setConfirmText("OK");
+                    dialog.open();
+
+                }
+
+            }
+        }
+    }
 }

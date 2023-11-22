@@ -10,4 +10,5 @@ public interface UserDataService {
     Optional<UserData> find(String userId);
     void delete(UserData userData);
     Map<String, UserData> getMap();
+    void persist(UserData item);
 }

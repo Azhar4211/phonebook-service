@@ -18,14 +18,12 @@ import java.util.stream.Stream;
 
 public class UserDataProviderInMemory extends AbstractBackEndDataProvider<UserData, CrudFilter> {
 
-    //private static final UserDataServiceImpl USER_DATA_SERVICE = new UserDataServiceImpl();
 
-    private static final UserDataService USER_DATA_SERVICE = new UserDataServiceImpl();
+    private static final UserDataService userDataService = new UserDataServiceImpl();
     private Consumer<Long> sizeChangeListener;
 
-
-    public Map<String, UserData> getMap(){
-        return  USER_DATA_SERVICE.getMap();
+    public Map<String, UserData> getMap() {
+        return  userDataService.getMap();
     }
 
     @Override
@@ -34,7 +32,7 @@ public class UserDataProviderInMemory extends AbstractBackEndDataProvider<UserDa
         int offset = query.getOffset();
         int limit = query.getLimit();
 
-        Stream<UserData> stream = USER_DATA_SERVICE.getMap().values().stream();
+        Stream<UserData> stream = userDataService.getMap().values().stream();
 
         if (query.getFilter().isPresent()) {
             stream = stream.filter(predicate(query.getFilter().get()))
@@ -106,49 +104,10 @@ public class UserDataProviderInMemory extends AbstractBackEndDataProvider<UserDa
     }
 
     public void persist(UserData item) {
-        String uuid;
-
-        if (item.getUserId() == null) {
-            uuid = UUID.randomUUID().toString();
-            item.setUserId(uuid);
-            USER_DATA_SERVICE.getMap().put(uuid, item);
-        } else {
-            Optional<UserData> userData = find(item.getUserId());
-            if(userData.isPresent()) {
-
-                if(userData.get().getVersion().equals(item.getVersion())) {
-                    item.setVersion(item.getVersion()+1);
-                    USER_DATA_SERVICE.getMap().replace(userData.get().getUserId(), item);
-                } else {
-                    ConfirmDialog dialog = new ConfirmDialog();
-                    dialog.setHeader("User rights Violation");
-                    dialog.setText(new Html(
-                            "<p>This data has already modified from another user" +
-                                    "</p>"));
-
-                    dialog.setConfirmText("OK");
-                    dialog.open();
-
-                }
-
-            }
-        }
-    }
-
-    Optional<UserData> find(String userId) {
-        return Optional.of( USER_DATA_SERVICE.getMap().get(userId));
+        userDataService.persist(item);
     }
 
     public void delete(UserData userData) {
-        if(USER_DATA_SERVICE.getMap().remove(userData.getUserId()) == null) {
-            ConfirmDialog dialog = new ConfirmDialog();
-            dialog.setHeader("Data deleted");
-            dialog.setText(new Html(
-                    "<p>This data has already deleted By another user" +
-                            "</p>"));
-
-            dialog.setConfirmText("OK");
-            dialog.open();
-        }
+       userDataService.delete(userData);
     }
 }
