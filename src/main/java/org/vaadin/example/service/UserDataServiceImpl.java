@@ -69,6 +69,16 @@ public class UserDataServiceImpl implements UserDataService{
                                     "</p>"));
 
                     dialog.setConfirmText("OK");
+
+                    dialog.setCancelable(true);
+                    dialog.setRejectable(true);
+                    dialog.setRejectText("Discard");
+
+                    dialog.setConfirmText("Overwrite");
+                    dialog.addConfirmListener(
+                            confirmEvent -> userMap.replace(userData.get().getUserId(), item)
+                    );
+
                     dialog.open();
                 }
 
