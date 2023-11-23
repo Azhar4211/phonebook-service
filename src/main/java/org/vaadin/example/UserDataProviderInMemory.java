@@ -1,7 +1,5 @@
 package org.vaadin.example;
 
-import com.vaadin.flow.component.Html;
-import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.crud.CrudFilter;
 import com.vaadin.flow.data.provider.AbstractBackEndDataProvider;
 import com.vaadin.flow.data.provider.Query;
@@ -105,6 +103,17 @@ public class UserDataProviderInMemory extends AbstractBackEndDataProvider<UserDa
 
     public void persist(UserData item) {
         userDataService.persist(item);
+    }
+
+    public void editedItem(UserData item) {
+        System.out.println("Edit listener called");
+//        item.setEditModeFlag(true);
+
+    }
+
+    public void cancelItem(UserData item) {
+        System.out.println("cancel item called");
+        userDataService.cancelItem(item);
     }
 
     public void delete(UserData userData) {

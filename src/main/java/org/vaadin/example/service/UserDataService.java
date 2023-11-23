@@ -15,6 +15,7 @@ public interface UserDataService {
 
     void persist(UserData item);
 
+    void cancelItem(UserData item);
 
 
 
