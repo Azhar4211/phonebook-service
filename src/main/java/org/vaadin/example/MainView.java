@@ -56,6 +56,8 @@ public class MainView extends VerticalLayout {
             UserData cloned = event.getItem().clone();
             currentUser = cloned;
             crud.edit(cloned, Crud.EditMode.EXISTING_ITEM);
+
+
         });
 
         // Only show these columns (all columns shown by default):

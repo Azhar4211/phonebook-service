@@ -1,7 +1,6 @@
 package org.vaadin.example;
 
-import com.vaadin.flow.component.Html;
-import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
+
 import com.vaadin.flow.component.crud.CrudFilter;
 import com.vaadin.flow.data.provider.AbstractBackEndDataProvider;
 import com.vaadin.flow.data.provider.Query;
