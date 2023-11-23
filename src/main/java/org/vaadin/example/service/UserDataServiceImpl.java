@@ -70,7 +70,6 @@ public class UserDataServiceImpl implements UserDataService{
 
                     dialog.setConfirmText("OK");
                     dialog.open();
-
                 }
 
             }
