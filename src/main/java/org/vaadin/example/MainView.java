@@ -37,7 +37,6 @@ public class MainView extends VerticalLayout {
     private String FIRST_NAME = "name";
     private String LAST_NAME = "lastName";
     private String EMAIL = "email";
-
     private UserData currentUser;
 
     private final UserDataProviderInMemory dataProvider = new UserDataProviderInMemory();
