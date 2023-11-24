@@ -1,6 +1,5 @@
 package org.vaadin.example;
 
-
 import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.Text;
@@ -24,10 +23,8 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
-import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.validator.EmailValidator;
 import com.vaadin.flow.router.Route;
-import org.apache.commons.lang3.StringUtils;
 import org.vaadin.example.model.UserData;
 import java.util.Arrays;
 import java.util.List;
@@ -61,7 +58,6 @@ public class MainView extends VerticalLayout {
 
         Crud.removeEditColumn(grid);
 
-
         grid.addItemDoubleClickListener(event -> {
             concurrentUserHandle(event.getItem());
         });
@@ -85,10 +81,7 @@ public class MainView extends VerticalLayout {
 
         System.out.println("Double click called");
 
-        //UserData cloned = item.clone();
-
         currentUser = item;
-
 
         if(!item.isEditModeFlag()) {
             item.setEditModeFlag(true);
@@ -103,7 +96,7 @@ public class MainView extends VerticalLayout {
     }
     private void showWarningNotification(){
         Div text = new Div(
-                new Text("This Data is being modified by another user"),
+                new Text("This Data is being modify by another user"),
                 new HtmlComponent("br"));
 
         Notification notification = new Notification();
@@ -128,7 +121,6 @@ public class MainView extends VerticalLayout {
 
         crud.setDataProvider(dataProvider);
 
-
         crud.addDeleteListener(
                 deleteEvent -> {
                     if(dataProvider.delete(deleteEvent.getItem())){
@@ -147,16 +139,10 @@ public class MainView extends VerticalLayout {
         crud.addSaveListener(
                 saveEvent -> dataProvider.persist(saveEvent.getItem()));
 
-
-//        crud.addEditListener(userDataEditEvent -> dataProvider.editedItem(userDataEditEvent.getItem()));
-
         crud.addCancelListener(cancelEvent -> {
-            if(dataProvider.cancelItemEdit(cancelEvent.getItem())){
-
-            }else {
+            if(!dataProvider.cancelItemEdit(cancelEvent.getItem())){
                 crud.getGrid().getEditor().closeEditor();
             }
-
         });
 
     }
