@@ -84,8 +84,6 @@ public class MainView extends VerticalLayout {
 
         crud.addSaveListener(
                 saveEvent -> dataProvider.persist(saveEvent.getItem()));
-
-
     }
 
     private CrudEditor<UserData> createEditor() {

@@ -1,14 +1,12 @@
 package org.vaadin.example;
 
-
 import com.vaadin.flow.component.crud.CrudFilter;
 import com.vaadin.flow.data.provider.AbstractBackEndDataProvider;
 import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.provider.SortDirection;
 import org.vaadin.example.model.UserData;
 import org.vaadin.example.service.UserDataService;
-import org.vaadin.example.service.UserDataServiceImpl;
-
+import org.vaadin.example.service.UserDataServiceDatabaseImpl;
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.function.Consumer;
@@ -18,7 +16,7 @@ import java.util.stream.Stream;
 public class UserDataProviderInMemory extends AbstractBackEndDataProvider<UserData, CrudFilter> {
 
 
-    private static final UserDataService userDataService = new UserDataServiceImpl();
+    private static final UserDataService userDataService = new UserDataServiceDatabaseImpl();
     private Consumer<Long> sizeChangeListener;
 
     public Map<String, UserData> getMap() {
@@ -108,5 +106,6 @@ public class UserDataProviderInMemory extends AbstractBackEndDataProvider<UserDa
 
     public void delete(UserData userData) {
        userDataService.delete(userData);
+
     }
 }
