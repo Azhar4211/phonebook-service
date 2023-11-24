@@ -13,7 +13,7 @@ public interface UserDataService {
 
     Map<String, UserData> getMap();
 
-    void persist(UserData item);
+    boolean persist(UserData item);
 
     void cancelItem(UserData item);
 

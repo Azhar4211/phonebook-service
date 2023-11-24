@@ -4,16 +4,13 @@ package org.vaadin.example;
 import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.Text;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.crud.BinderCrudEditor;
 import com.vaadin.flow.component.crud.Crud;
 import com.vaadin.flow.component.crud.CrudEditor;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.grid.ItemDoubleClickEvent;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.icon.Icon;
@@ -32,11 +29,6 @@ import com.vaadin.flow.router.Route;
 import org.vaadin.example.model.UserData;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 @Route("")
 public class MainView extends VerticalLayout {
@@ -68,8 +60,7 @@ public class MainView extends VerticalLayout {
         Crud.removeEditColumn(grid);
 
         grid.addItemDoubleClickListener(event -> {
-            cocurrentUserHandle(event.getItem());
-
+            concurrentUserHandle(event.getItem());
 
         });
 
@@ -88,7 +79,7 @@ public class MainView extends VerticalLayout {
                 grid.getColumnByKey(EMAIL));
     }
 
-    private void cocurrentUserHandle(UserData item) {
+    private void concurrentUserHandle(UserData item) {
 
         System.out.println("Double click called");
         UserData lastModifiedUser = new UserData();
@@ -100,16 +91,16 @@ public class MainView extends VerticalLayout {
 
 
         List<UserData> userDataList = crud.getGrid().getDataProvider().fetch(new Query<>()).toList();
-        Optional<UserData> existingRecord = userDataList.stream().filter(user-> user.getUserId().equalsIgnoreCase(item.getUserId())).findFirst();
+//        Optional<UserData> existingRecord = userDataList.stream().filter(user-> user.getUserId().equalsIgnoreCase(item.getUserId())).findFirst();
 
         if(!item.isEditModeFlag()) {
             item.setEditModeFlag(true);
             crud.edit(item, Crud.EditMode.EXISTING_ITEM);
-            lastModifiedUser = item;
+            crud.getDataProvider().refreshAll();
         } else {
             showWarningNotification();
             crud.edit(item, Crud.EditMode.EXISTING_ITEM);
-            lastModifiedUser = item;
+            crud.getDataProvider().refreshAll();
         }
 
     }
@@ -146,7 +137,7 @@ public class MainView extends VerticalLayout {
         crud.addSaveListener(
                 saveEvent -> dataProvider.persist(saveEvent.getItem()));
 
-        crud.addEditListener(userDataEditEvent -> dataProvider.editedItem(userDataEditEvent.getItem()));
+//        crud.addEditListener(userDataEditEvent -> dataProvider.editedItem(userDataEditEvent.getItem()));
 
         crud.addCancelListener(cancelEvent -> dataProvider.cancelItemEdit(cancelEvent.getItem()));
     }

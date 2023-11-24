@@ -16,11 +16,12 @@ import lombok.Getter;
 import org.vaadin.example.model.UserData;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Getter
 public class UserDataServiceImpl implements UserDataService{
 
-    public final Map<String, UserData> userMap = new HashMap<>();
+    public final Map<String, UserData> userMap = new ConcurrentHashMap<>();
 
     public UserDataServiceImpl() {
         InitializeInMemoryData();
@@ -56,7 +57,7 @@ public class UserDataServiceImpl implements UserDataService{
         return userMap;
     }
 
-    public void persist(UserData item) {
+    public boolean persist(UserData item) {
         String uuid;
 
         if (item.getUserId() == null) {
@@ -65,7 +66,7 @@ public class UserDataServiceImpl implements UserDataService{
             item.setVersion(0);
             item.setEditModeFlag(false);
             userMap.put(uuid, item);
-
+            return true;
         } else {
             Optional<UserData> userData = find(item.getUserId());
             if(userData.isPresent()) {
@@ -75,16 +76,18 @@ public class UserDataServiceImpl implements UserDataService{
                     item.setEditModeFlag(false);
                     userMap.replace(userData.get().getUserId(), item);
                     System.out.println("User map: "+userData);
+                    return true;
 
                 } else {
                     showAlreadyModifiedWarningNotification();
                     item.setVersion(item.getVersion()+1);
                     item.setEditModeFlag(false);
                     userMap.replace(userData.get().getUserId(), item);
+                    return true;
                 }
-
             }
         }
+        return false;
     }
 
     @Override
