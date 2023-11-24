@@ -44,10 +44,15 @@ public class MainView extends VerticalLayout {
 
     public MainView() {
         crud = new Crud<>(UserData.class, createEditor());
+        crud.setDataProvider(dataProvider);
 
         setupGrid();
-        setupDataProvider();
-        setupToolbar();
+        setupActionEvents();
+        setupLayout();
+
+        /*
+        * Components addition into Layout
+        * */
         add(new H1("Phone Book Application"));
         add(crud);
 
@@ -77,55 +82,28 @@ public class MainView extends VerticalLayout {
                 grid.getColumnByKey(EMAIL));
     }
 
+    /**
+     * Edit mode handling for multiple users
+     * */
     private void concurrentUserHandle(UserData item) {
-
-        System.out.println("Double click called");
-
         currentUser = item;
 
         if(!item.isEditModeFlag()) {
             item.setEditModeFlag(true);
-            crud.edit(item, Crud.EditMode.EXISTING_ITEM);
-            crud.getDataProvider().refreshAll();
         } else {
             showWarningNotification();
-            crud.edit(item, Crud.EditMode.EXISTING_ITEM);
-            crud.getDataProvider().refreshAll();
         }
-
-    }
-    private void showWarningNotification(){
-        Div text = new Div(
-                new Text("This Data is being modify by another user"),
-                new HtmlComponent("br"));
-
-        Notification notification = new Notification();
-        notification.addThemeVariants(NotificationVariant.LUMO_WARNING);
-
-        Button closeButton = new Button(new Icon("lumo", "cross"));
-        closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
-        closeButton.setAriaLabel("Close");
-        closeButton.addClickListener(event2 -> {
-            notification.close();
-        });
-
-        HorizontalLayout layout = new HorizontalLayout(text, closeButton);
-        layout.setAlignItems(FlexComponent.Alignment.CENTER);
-
-        notification.add(layout);
-        notification.open();
-
+        crud.edit(item, Crud.EditMode.EXISTING_ITEM);
+        crud.getDataProvider().refreshAll();
     }
 
-    private void setupDataProvider() {
-
-        crud.setDataProvider(dataProvider);
+    private void setupActionEvents() {
 
         crud.addDeleteListener(
                 deleteEvent -> {
                     if(dataProvider.delete(deleteEvent.getItem())){
                         Notification.show("User: "+deleteEvent.getItem().getName()+ " has deleted");
-                    }else {
+                    } else {
                         ConfirmDialog dialog = new ConfirmDialog();
                         dialog.setHeader("Data deleted");
                         dialog.setText(new Html(
@@ -144,7 +122,6 @@ public class MainView extends VerticalLayout {
                 crud.getGrid().getEditor().closeEditor();
             }
         });
-
     }
 
     private CrudEditor<UserData> createEditor() {
@@ -189,14 +166,7 @@ public class MainView extends VerticalLayout {
         return new BinderCrudEditor<>(binder, form);
     }
 
-    private boolean isPhoneNumberUnique(String phoneNumber) {
-
-        return dataProvider.getMap().values().stream()
-            .noneMatch(userData -> userData.getPhoneNumber().equals(phoneNumber)
-                    && !userData.getPhoneNumber().equalsIgnoreCase(currentUser.getPhoneNumber()));
-    }
-
-    private void setupToolbar() {
+    private void setupLayout() {
         Html total = new Html("<span>Total: <b>" + dataProvider.getMap().values().size()
                 + "</b> Users</span>");
 
@@ -214,5 +184,36 @@ public class MainView extends VerticalLayout {
         toolbar.setFlexGrow(1, toolbar);
         toolbar.setSpacing(false);
         crud.setToolbar(toolbar);
+    }
+
+
+    private void showWarningNotification(){
+        Div text = new Div(
+                new Text("This Data is being modify by another user"),
+                new HtmlComponent("br"));
+
+        Notification notification = new Notification();
+        notification.addThemeVariants(NotificationVariant.LUMO_WARNING);
+
+        Button closeButton = new Button(new Icon("lumo", "cross"));
+        closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+        closeButton.setAriaLabel("Close");
+        closeButton.addClickListener(event2 -> {
+            notification.close();
+        });
+
+        HorizontalLayout layout = new HorizontalLayout(text, closeButton);
+        layout.setAlignItems(FlexComponent.Alignment.CENTER);
+
+        notification.add(layout);
+        notification.open();
+
+    }
+
+    private boolean isPhoneNumberUnique(String phoneNumber) {
+
+        return dataProvider.getMap().values().stream()
+            .noneMatch(userData -> userData.getPhoneNumber().equals(phoneNumber)
+                    && !userData.getPhoneNumber().equalsIgnoreCase(currentUser.getPhoneNumber()));
     }
 }
