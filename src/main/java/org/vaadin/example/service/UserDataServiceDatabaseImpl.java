@@ -65,7 +65,7 @@ public class UserDataServiceDatabaseImpl implements UserDataService{
                dialog.setConfirmText("OK");
                dialog.open();
            } else {
-
+                userMap.remove(userData.getUserId());
             }
 
         } catch (SQLException e) {
