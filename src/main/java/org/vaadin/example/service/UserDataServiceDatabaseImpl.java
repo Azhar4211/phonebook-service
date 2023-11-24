@@ -113,7 +113,7 @@ public class UserDataServiceDatabaseImpl implements UserDataService{
             preparedStatement.setString(9, userData.getUserId());
             preparedStatement.setInt(10, userData.getVersion());
             preparedStatement.setBoolean(11, userData.isEditModeFlag());
-            
+
             preparedStatement.setString(12, userData.getUserId());
             return preparedStatement.executeUpdate() > 0;
         } catch (SQLException e) {

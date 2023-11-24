@@ -17,5 +17,4 @@ public interface UserDataService {
 
     boolean cancelItem(UserData item);
 
-
 }

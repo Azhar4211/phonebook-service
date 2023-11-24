@@ -27,6 +27,7 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.validator.EmailValidator;
 import com.vaadin.flow.router.Route;
+import org.apache.commons.lang3.StringUtils;
 import org.vaadin.example.model.UserData;
 import java.util.Arrays;
 import java.util.List;
@@ -133,7 +134,7 @@ public class MainView extends VerticalLayout {
         crud.addDeleteListener(
                 deleteEvent -> {
                     if(dataProvider.delete(deleteEvent.getItem())){
-                        Notification.show("Data hase deleted");
+                        Notification.show("User+ "+deleteEvent.getItem().getName()+ " has deleted");
                     }else {
                         ConfirmDialog dialog = new ConfirmDialog();
                         dialog.setHeader("Data deleted");

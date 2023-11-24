@@ -44,18 +44,12 @@ public class UserDataProviderInMemory extends AbstractBackEndDataProvider<UserDa
 
     @Override
     protected int sizeInBackEnd(Query<UserData, CrudFilter> query) {
-        // For RDBMS just execute a SELECT COUNT(*) ... WHERE query
         long count = fetchFromBackEnd(query).count();
-
         if (sizeChangeListener != null) {
             sizeChangeListener.accept(count);
         }
 
         return (int) count;
-    }
-
-    void setSizeChangeListener(Consumer<Long> listener) {
-        sizeChangeListener = listener;
     }
 
     private static Predicate<UserData> predicate(CrudFilter filter) {
@@ -74,7 +68,6 @@ public class UserDataProviderInMemory extends AbstractBackEndDataProvider<UserDa
     }
 
     private static Comparator<UserData> comparator(CrudFilter filter) {
-        // For RDBMS just generate an ORDER BY clause
         return filter.getSortOrders().entrySet().stream().map(sortClause -> {
             try {
                 Comparator<UserData> comparator = Comparator.comparing(
