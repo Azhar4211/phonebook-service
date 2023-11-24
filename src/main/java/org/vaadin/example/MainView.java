@@ -64,6 +64,7 @@ public class MainView extends VerticalLayout {
         Crud.removeEditColumn(grid);
 
         grid.addItemDoubleClickListener(event -> {
+            currentUser = event.getItem();
             concurrentUserHandle(event.getItem());
         });
 
@@ -86,7 +87,7 @@ public class MainView extends VerticalLayout {
      * Edit mode handling for multiple users
      * */
     private void concurrentUserHandle(UserData item) {
-        currentUser = item;
+
 
         if(!item.isEditModeFlag()) {
             item.setEditModeFlag(true);
