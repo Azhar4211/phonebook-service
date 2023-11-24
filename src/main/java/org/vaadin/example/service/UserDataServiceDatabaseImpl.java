@@ -1,23 +1,20 @@
 package org.vaadin.example.service;
 
-import com.vaadin.flow.component.Html;
-import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import lombok.Getter;
 import org.apache.commons.lang3.ObjectUtils;
 import org.vaadin.example.database.DatabaseConnectionUtil;
 import org.vaadin.example.model.UserData;
-
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Getter
 public class UserDataServiceDatabaseImpl implements UserDataService{
 
-    public final Map<String, UserData> userMap = new HashMap<>();
+    public final Map<String, UserData> userMap = new ConcurrentHashMap<>();
 
-    private static final String TABLE_NAME = "user_data";
     public UserDataServiceDatabaseImpl() {
         InitializeDbData();
     }
@@ -53,6 +50,10 @@ public class UserDataServiceDatabaseImpl implements UserDataService{
         return Optional.of(userMap.get(userId));
     }
 
+    public Map<String, UserData> getMap() {
+        return userMap;
+    }
+
     public boolean delete(UserData userData) {
         String query = "delete from user_data where user_id= ?";
         try (PreparedStatement preparedStatement = DatabaseConnectionUtil.getConnection().prepareStatement(query)) {
@@ -60,7 +61,7 @@ public class UserDataServiceDatabaseImpl implements UserDataService{
 
             if(preparedStatement.executeUpdate() <= 0) {
                 return false;
-           } else {
+            } else {
                 userMap.remove(userData.getUserId());
                 return true;
             }
@@ -70,10 +71,6 @@ public class UserDataServiceDatabaseImpl implements UserDataService{
         }
     }
 
-    public Map<String, UserData> getMap() {
-        return userMap;
-    }
-
     public boolean persist(UserData item) {
         String uuid;
 
@@ -81,7 +78,9 @@ public class UserDataServiceDatabaseImpl implements UserDataService{
             uuid = UUID.randomUUID().toString();
             item.setUserId(uuid);
             item.setVersion(0);
+            item.setEditModeFlag(false);
             userMap.put(uuid, item);
+            addUser(item);
         } else {
             Optional<UserData> userData = find(item.getUserId());
             if(userData.isPresent()) {
@@ -97,6 +96,26 @@ public class UserDataServiceDatabaseImpl implements UserDataService{
             }
         }
         return false;
+    }
+
+    public boolean addUser(UserData userData) {
+        String query = "INSERT INTO user_data (name, last_name, phone_number, email, street, city, country, address, user_id, version, edit_mode_flag) values (?,?,?,?,?,?,?,?,?,?,?)";
+        try (PreparedStatement preparedStatement = DatabaseConnectionUtil.getConnection().prepareStatement(query)) {
+            preparedStatement.setString(1, userData.getName());
+            preparedStatement.setString(2, userData.getLastName());
+            preparedStatement.setString(3, userData.getPhoneNumber());
+            preparedStatement.setString(4, userData.getEmail());
+            preparedStatement.setString(5, userData.getStreet());
+            preparedStatement.setString(6, userData.getCity());
+            preparedStatement.setString(7, userData.getCountry());
+            preparedStatement.setString(8, userData.getAddress());
+            preparedStatement.setString(9, userData.getUserId());
+            preparedStatement.setInt(10, userData.getVersion());
+            preparedStatement.setBoolean(11, userData.isEditModeFlag());
+            return preparedStatement.executeUpdate() > 0;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public boolean updateUser(UserData userData) {

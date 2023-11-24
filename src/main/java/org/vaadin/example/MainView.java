@@ -84,12 +84,10 @@ public class MainView extends VerticalLayout {
     private void concurrentUserHandle(UserData item) {
 
         System.out.println("Double click called");
-        UserData lastModifiedUser = new UserData();
-        if(currentUser != null) {
-            lastModifiedUser = currentUser;
-        }
-        UserData cloned = item.clone();
-        currentUser = cloned;
+
+        //UserData cloned = item.clone();
+
+        currentUser = item;
 
 
         if(!item.isEditModeFlag()) {
@@ -134,14 +132,13 @@ public class MainView extends VerticalLayout {
         crud.addDeleteListener(
                 deleteEvent -> {
                     if(dataProvider.delete(deleteEvent.getItem())){
-                        Notification.show("User+ "+deleteEvent.getItem().getName()+ " has deleted");
+                        Notification.show("User: "+deleteEvent.getItem().getName()+ " has deleted");
                     }else {
                         ConfirmDialog dialog = new ConfirmDialog();
                         dialog.setHeader("Data deleted");
                         dialog.setText(new Html(
-                                "<p>This data has already deleted By another user" +
+                                "<p>This user"+deleteEvent.getItem().getName()+" data has already deleted By another user" +
                                         "</p>"));
-
                         dialog.setConfirmText("OK");
                         dialog.open();
                     }
