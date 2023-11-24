@@ -41,17 +41,8 @@ public class UserDataServiceImpl implements UserDataService{
         return Optional.of( userMap.get(userId));
     }
 
-    public void delete(UserData userData) {
-        if(userMap.remove(userData.getUserId()) == null) {
-            ConfirmDialog dialog = new ConfirmDialog();
-            dialog.setHeader("Data deleted");
-            dialog.setText(new Html(
-                    "<p>This data has already deleted By another user" +
-                            "</p>"));
-
-            dialog.setConfirmText("OK");
-            dialog.open();
-        }
+    public boolean delete(UserData userData) {
+        return userMap.remove(userData.getUserId()) != null;
     }
 
     public Map<String, UserData> getMap(){

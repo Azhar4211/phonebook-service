@@ -6,6 +6,7 @@ import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.crud.BinderCrudEditor;
 import com.vaadin.flow.component.crud.Crud;
 import com.vaadin.flow.component.crud.CrudEditor;
@@ -131,8 +132,22 @@ public class MainView extends VerticalLayout {
 
         crud.setDataProvider(dataProvider);
 
+
         crud.addDeleteListener(
-                deleteEvent -> dataProvider.delete(deleteEvent.getItem()));
+                deleteEvent -> {
+                    if(dataProvider.delete(deleteEvent.getItem())){
+                        Notification.show("Data hase deleted");
+                    }else {
+                        ConfirmDialog dialog = new ConfirmDialog();
+                        dialog.setHeader("Data deleted");
+                        dialog.setText(new Html(
+                                "<p>This data has already deleted By another user" +
+                                        "</p>"));
+
+                        dialog.setConfirmText("OK");
+                        dialog.open();
+                    }
+                });
 
         crud.addSaveListener(
                 saveEvent -> dataProvider.persist(saveEvent.getItem()));

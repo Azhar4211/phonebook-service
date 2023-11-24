@@ -49,23 +49,16 @@ public class UserDataServiceDatabaseImpl implements UserDataService{
         return Optional.of(userMap.get(userId));
     }
 
-    public void delete(UserData userData) {
+    public boolean delete(UserData userData) {
         String query = "delete from user_data where user_id= ?";
         try (PreparedStatement preparedStatement = DatabaseConnectionUtil.getConnection().prepareStatement(query)) {
             preparedStatement.setString(1, userData.getUserId());
 
             if(preparedStatement.executeUpdate() <= 0) {
-
-               ConfirmDialog dialog = new ConfirmDialog();
-               dialog.setHeader("Data deleted");
-               dialog.setText(new Html(
-                       "<p>This data has already deleted By another user" +
-                               "</p>"));
-
-               dialog.setConfirmText("OK");
-               dialog.open();
+                return false;
            } else {
                 userMap.remove(userData.getUserId());
+                return true;
             }
 
         } catch (SQLException e) {

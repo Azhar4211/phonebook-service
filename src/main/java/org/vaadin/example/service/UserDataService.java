@@ -9,7 +9,7 @@ public interface UserDataService {
 
     Optional<UserData> find(String userId);
 
-    void delete(UserData userData);
+    boolean delete(UserData userData);
 
     Map<String, UserData> getMap();
 

@@ -1,6 +1,9 @@
 package org.vaadin.example;
 
+import com.vaadin.flow.component.Html;
+import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.crud.CrudFilter;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.data.provider.AbstractBackEndDataProvider;
 import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.provider.SortDirection;
@@ -116,8 +119,8 @@ public class UserDataProviderInMemory extends AbstractBackEndDataProvider<UserDa
         return userDataService.cancelItem(item);
     }
 
-    public void delete(UserData userData) {
-       userDataService.delete(userData);
+    public boolean delete(UserData userData) {
+       return userDataService.delete(userData);
 
     }
 }
