@@ -139,7 +139,14 @@ public class MainView extends VerticalLayout {
 
 //        crud.addEditListener(userDataEditEvent -> dataProvider.editedItem(userDataEditEvent.getItem()));
 
-        crud.addCancelListener(cancelEvent -> dataProvider.cancelItemEdit(cancelEvent.getItem()));
+        crud.addCancelListener(cancelEvent -> {
+            if(dataProvider.cancelItemEdit(cancelEvent.getItem())){
+
+            }else {
+                crud.getGrid().getEditor().closeEditor();
+            }
+
+        });
     }
 
     private CrudEditor<UserData> createEditor() {

@@ -15,7 +15,7 @@ public interface UserDataService {
 
     boolean persist(UserData item);
 
-    void cancelItem(UserData item);
+    boolean cancelItem(UserData item);
 
 
 

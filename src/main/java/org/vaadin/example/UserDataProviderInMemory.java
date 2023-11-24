@@ -112,9 +112,9 @@ public class UserDataProviderInMemory extends AbstractBackEndDataProvider<UserDa
 
     }
 
-    public void cancelItemEdit(UserData item) {
+    public boolean cancelItemEdit(UserData item) {
         System.out.println("cancel item called");
-        userDataService.cancelItem(item);
+        return userDataService.cancelItem(item);
     }
 
     public void delete(UserData userData) {

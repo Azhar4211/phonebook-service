@@ -13,6 +13,7 @@ import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import lombok.Getter;
+import org.apache.commons.lang3.ObjectUtils;
 import org.vaadin.example.model.UserData;
 
 import java.util.*;
@@ -91,11 +92,17 @@ public class UserDataServiceImpl implements UserDataService{
     }
 
     @Override
-    public void cancelItem(UserData item) {
+    public boolean cancelItem(UserData item) {
+        if(ObjectUtils.allNull(item.getUserId())) {
+            return false;
+        }
         Optional<UserData> userData = find(item.getUserId());
-        UserData oldObject = userData.get();
-        oldObject.setEditModeFlag(false);
-        userMap.replace(item.getUserId(), oldObject);
+        if(userData.isPresent()){
+            UserData oldObject = userData.get();
+            oldObject.setEditModeFlag(false);
+            userMap.replace(item.getUserId(), oldObject);
+        }
+        return true;
     }
 
     private void showAlreadyModifiedWarningNotification(){
