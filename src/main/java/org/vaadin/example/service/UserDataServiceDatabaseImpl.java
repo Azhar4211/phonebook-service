@@ -98,7 +98,7 @@ public class UserDataServiceDatabaseImpl implements UserDataService{
         return false;
     }
 
-    public boolean addUser(UserData userData) {
+    public synchronized boolean addUser(UserData userData) {
         String query = "INSERT INTO user_data (name, last_name, phone_number, email, street, city, country, address, user_id, version, edit_mode_flag) values (?,?,?,?,?,?,?,?,?,?,?)";
         try (PreparedStatement preparedStatement = DatabaseConnectionUtil.getConnection().prepareStatement(query)) {
             preparedStatement.setString(1, userData.getName());
@@ -118,7 +118,7 @@ public class UserDataServiceDatabaseImpl implements UserDataService{
         }
     }
 
-    public boolean updateUser(UserData userData) {
+    public synchronized boolean updateUser(UserData userData) {
         String query = "UPDATE user_data SET name=?, last_name=?, phone_number=?, email=?, street=?, city=?, country=?, address=?, user_id=?, version=?, edit_mode_flag=? WHERE user_id=?";
         try (PreparedStatement preparedStatement = DatabaseConnectionUtil.getConnection().prepareStatement(query)) {
             preparedStatement.setString(1, userData.getName());
