@@ -2,6 +2,8 @@ package org.vaadin.example;
 
 
 import com.vaadin.flow.component.Html;
+import com.vaadin.flow.component.HtmlComponent;
+import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.crud.BinderCrudEditor;
@@ -9,14 +11,19 @@ import com.vaadin.flow.component.crud.Crud;
 import com.vaadin.flow.component.crud.CrudEditor;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
+import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.validator.EmailValidator;
 import com.vaadin.flow.router.Route;
 import org.vaadin.example.model.UserData;
@@ -51,13 +58,10 @@ public class MainView extends VerticalLayout {
         Grid<UserData> grid = crud.getGrid();
 
         Crud.removeEditColumn(grid);
+
+
         grid.addItemDoubleClickListener(event -> {
-
-            UserData cloned = event.getItem().clone();
-            currentUser = cloned;
-            crud.edit(cloned, Crud.EditMode.EXISTING_ITEM);
-
-
+            concurrentUserHandle(event.getItem());
         });
 
         // Only show these columns (all columns shown by default):
@@ -75,6 +79,54 @@ public class MainView extends VerticalLayout {
                 grid.getColumnByKey(EMAIL));
     }
 
+    private void concurrentUserHandle(UserData item) {
+
+        System.out.println("Double click called");
+        UserData lastModifiedUser = new UserData();
+        if(currentUser != null) {
+            lastModifiedUser = currentUser;
+        }
+        UserData cloned = item.clone();
+        currentUser = cloned;
+
+
+        List<UserData> userDataList = crud.getGrid().getDataProvider().fetch(new Query<>()).toList();
+//        Optional<UserData> existingRecord = userDataList.stream().filter(user-> user.getUserId().equalsIgnoreCase(item.getUserId())).findFirst();
+
+        if(!item.isEditModeFlag()) {
+            item.setEditModeFlag(true);
+            crud.edit(item, Crud.EditMode.EXISTING_ITEM);
+            crud.getDataProvider().refreshAll();
+        } else {
+            showWarningNotification();
+            crud.edit(item, Crud.EditMode.EXISTING_ITEM);
+            crud.getDataProvider().refreshAll();
+        }
+
+    }
+    private void showWarningNotification(){
+        Div text = new Div(
+                new Text("This Data is being modified by another user"),
+                new HtmlComponent("br"));
+
+        Notification notification = new Notification();
+        notification.addThemeVariants(NotificationVariant.LUMO_WARNING);
+
+        Button closeButton = new Button(new Icon("lumo", "cross"));
+        closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+        closeButton.setAriaLabel("Close");
+        closeButton.addClickListener(event2 -> {
+            notification.close();
+        });
+
+        HorizontalLayout layout = new HorizontalLayout(text, closeButton);
+        layout.setAlignItems(FlexComponent.Alignment.CENTER);
+
+        notification.add(layout);
+        notification.open();
+
+    }
+
     private void setupDataProvider() {
 
         crud.setDataProvider(dataProvider);
@@ -84,6 +136,19 @@ public class MainView extends VerticalLayout {
 
         crud.addSaveListener(
                 saveEvent -> dataProvider.persist(saveEvent.getItem()));
+
+
+//        crud.addEditListener(userDataEditEvent -> dataProvider.editedItem(userDataEditEvent.getItem()));
+
+        crud.addCancelListener(cancelEvent -> {
+            if(dataProvider.cancelItemEdit(cancelEvent.getItem())){
+
+            }else {
+                crud.getGrid().getEditor().closeEditor();
+            }
+
+        });
+
     }
 
     private CrudEditor<UserData> createEditor() {

@@ -21,6 +21,7 @@ public class UserData implements Cloneable {
     private String address;
     private String userId;
     private Integer version;
+    private boolean editModeFlag;
 
 
     public UserData(String name, String lastName, String email, String userId) {
@@ -29,6 +30,7 @@ public class UserData implements Cloneable {
         this.email = email;
         this.userId = userId;
     }
+
 
     @Override
     public UserData clone() {

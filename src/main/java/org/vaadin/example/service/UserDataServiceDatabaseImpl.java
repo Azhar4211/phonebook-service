@@ -77,7 +77,7 @@ public class UserDataServiceDatabaseImpl implements UserDataService{
         return userMap;
     }
 
-    public void persist(UserData item) {
+    public boolean persist(UserData item) {
         String uuid;
 
         if (item.getUserId() == null) {
@@ -105,5 +105,11 @@ public class UserDataServiceDatabaseImpl implements UserDataService{
 
             }
         }
+        return false;
+    }
+
+    @Override
+    public boolean cancelItem(UserData item) {
+        return false;
     }
 }

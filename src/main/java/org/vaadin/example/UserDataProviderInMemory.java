@@ -101,7 +101,19 @@ public class UserDataProviderInMemory extends AbstractBackEndDataProvider<UserDa
     }
 
     public void persist(UserData item) {
-        userDataService.persist(item);
+        if(userDataService.persist(item)){
+            refreshAll();
+        };
+    }
+
+    public void editedItem(UserData item) {
+        System.out.println("Edit listener called");
+
+    }
+
+    public boolean cancelItemEdit(UserData item) {
+        System.out.println("cancel item called");
+        return userDataService.cancelItem(item);
     }
 
     public void delete(UserData userData) {
