@@ -107,11 +107,10 @@ public class UserDataProviderInMemory extends AbstractBackEndDataProvider<UserDa
 
     public void editedItem(UserData item) {
         System.out.println("Edit listener called");
-//        item.setEditModeFlag(true);
 
     }
 
-    public void cancelItem(UserData item) {
+    public void cancelItemEdit(UserData item) {
         System.out.println("cancel item called");
         userDataService.cancelItem(item);
     }

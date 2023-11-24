@@ -69,6 +69,8 @@ public class MainView extends VerticalLayout {
 
         grid.addItemDoubleClickListener(event -> {
             cocurrentUserHandle(event.getItem());
+
+
         });
 
         // Only show these columns (all columns shown by default):
@@ -89,8 +91,13 @@ public class MainView extends VerticalLayout {
     private void cocurrentUserHandle(UserData item) {
 
         System.out.println("Double click called");
+        UserData lastModifiedUser = new UserData();
+        if(currentUser != null) {
+            lastModifiedUser = currentUser;
+        }
         UserData cloned = item.clone();
         currentUser = cloned;
+
 
         List<UserData> userDataList = crud.getGrid().getDataProvider().fetch(new Query<>()).toList();
         Optional<UserData> existingRecord = userDataList.stream().filter(user-> user.getUserId().equalsIgnoreCase(item.getUserId())).findFirst();
@@ -98,11 +105,11 @@ public class MainView extends VerticalLayout {
         if(!item.isEditModeFlag()) {
             item.setEditModeFlag(true);
             crud.edit(item, Crud.EditMode.EXISTING_ITEM);
-
-
+            lastModifiedUser = item;
         } else {
             showWarningNotification();
             crud.edit(item, Crud.EditMode.EXISTING_ITEM);
+            lastModifiedUser = item;
         }
 
     }
@@ -141,7 +148,7 @@ public class MainView extends VerticalLayout {
 
         crud.addEditListener(userDataEditEvent -> dataProvider.editedItem(userDataEditEvent.getItem()));
 
-        crud.addCancelListener(cancelEvent -> dataProvider.cancelItem(cancelEvent.getItem()));
+        crud.addCancelListener(cancelEvent -> dataProvider.cancelItemEdit(cancelEvent.getItem()));
     }
 
     private CrudEditor<UserData> createEditor() {
