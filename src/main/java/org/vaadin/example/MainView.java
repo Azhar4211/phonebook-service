@@ -91,9 +91,6 @@ public class MainView extends VerticalLayout {
         currentUser = cloned;
 
 
-        List<UserData> userDataList = crud.getGrid().getDataProvider().fetch(new Query<>()).toList();
-//        Optional<UserData> existingRecord = userDataList.stream().filter(user-> user.getUserId().equalsIgnoreCase(item.getUserId())).findFirst();
-
         if(!item.isEditModeFlag()) {
             item.setEditModeFlag(true);
             crud.edit(item, Crud.EditMode.EXISTING_ITEM);

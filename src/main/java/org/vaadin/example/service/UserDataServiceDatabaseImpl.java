@@ -3,6 +3,7 @@ package org.vaadin.example.service;
 import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import lombok.Getter;
+import org.apache.commons.lang3.ObjectUtils;
 import org.vaadin.example.database.DatabaseConnectionUtil;
 import org.vaadin.example.model.UserData;
 
@@ -37,12 +38,15 @@ public class UserDataServiceDatabaseImpl implements UserDataService{
                 user.setCity(resultSet.getString("city"));
                 user.setCountry(resultSet.getString("country"));
                 user.setUserId(resultSet.getString("user_id"));
+                user.setVersion(resultSet.getInt("version"));
+                user.setEditModeFlag(resultSet.getBoolean("edit_mode_flag"));
+
+
                 userMap.put(user.getUserId(), user);
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-
     }
 
     public Optional<UserData> find(String userId) {
@@ -84,25 +88,50 @@ public class UserDataServiceDatabaseImpl implements UserDataService{
 
                 if(userData.get().getVersion().equals(item.getVersion())) {
                     item.setVersion(item.getVersion()+1);
-                    userMap.replace(userData.get().getUserId(), item);
-                } else {
-                    ConfirmDialog dialog = new ConfirmDialog();
-                    dialog.setHeader("User rights Violation");
-                    dialog.setText(new Html(
-                            "<p>This data has already modified from another user" +
-                                    "</p>"));
-
-                    dialog.setConfirmText("OK");
-                    dialog.open();
+                    item.setEditModeFlag(false);
+                    if(updateUser(item)){
+                        userMap.replace(userData.get().getUserId(), item);
+                        return true;
+                    }
                 }
-
             }
         }
         return false;
     }
 
+    public boolean updateUser(UserData userData) {
+        String query = "UPDATE user_data SET name=?, last_name=?, phone_number=?, email=?, street=?, city=?, country=?, address=?, user_id=?, version=?, edit_mode_flag=? WHERE user_id=?";
+        try (PreparedStatement preparedStatement = DatabaseConnectionUtil.getConnection().prepareStatement(query)) {
+            preparedStatement.setString(1, userData.getName());
+            preparedStatement.setString(2, userData.getLastName());
+            preparedStatement.setString(3, userData.getPhoneNumber());
+            preparedStatement.setString(4, userData.getEmail());
+            preparedStatement.setString(5, userData.getStreet());
+            preparedStatement.setString(6, userData.getCity());
+            preparedStatement.setString(7, userData.getCountry());
+            preparedStatement.setString(8, userData.getAddress());
+            preparedStatement.setString(9, userData.getUserId());
+
+            preparedStatement.setInt(10, userData.getVersion());
+            preparedStatement.setBoolean(11, userData.isEditModeFlag());
+            preparedStatement.setString(12, userData.getUserId());
+            return preparedStatement.executeUpdate() > 0;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @Override
     public boolean cancelItem(UserData item) {
-        return false;
+        if(ObjectUtils.allNull(item.getUserId())) {
+            return false;
+        }
+        Optional<UserData> userData = find(item.getUserId());
+        if(userData.isPresent()){
+            UserData oldObject = userData.get();
+            oldObject.setEditModeFlag(false);
+            userMap.replace(item.getUserId(), oldObject);
+        }
+        return true;
     }
 }
