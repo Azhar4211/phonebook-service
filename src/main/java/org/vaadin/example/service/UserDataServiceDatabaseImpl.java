@@ -15,6 +15,7 @@ public class UserDataServiceDatabaseImpl implements UserDataService{
 
     public final Map<String, UserData> userMap = new ConcurrentHashMap<>();
 
+    private final Object lockedObject = new Object();
     public UserDataServiceDatabaseImpl() {
         InitializeDbData();
     }
@@ -55,19 +56,21 @@ public class UserDataServiceDatabaseImpl implements UserDataService{
     }
 
     public boolean delete(UserData userData) {
-        String query = "delete from user_data where user_id= ?";
-        try (PreparedStatement preparedStatement = DatabaseConnectionUtil.getConnection().prepareStatement(query)) {
-            preparedStatement.setString(1, userData.getUserId());
+        synchronized (userData.getUserId()) {
+            String query = "delete from user_data where user_id= ?";
+            try (PreparedStatement preparedStatement = DatabaseConnectionUtil.getConnection().prepareStatement(query)) {
+                preparedStatement.setString(1, userData.getUserId());
 
-            if(preparedStatement.executeUpdate() <= 0) {
-                return false;
-            } else {
-                userMap.remove(userData.getUserId());
-                return true;
+                if(preparedStatement.executeUpdate() <= 0) {
+                    return false;
+                } else {
+                    userMap.remove(userData.getUserId());
+                    return true;
+                }
+
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
             }
-
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
         }
     }
 
@@ -80,7 +83,11 @@ public class UserDataServiceDatabaseImpl implements UserDataService{
             item.setVersion(0);
             item.setEditModeFlag(false);
             userMap.put(uuid, item);
-            addUser(item);
+
+            synchronized (item.getUserId()) {
+                addUser(item);
+            }
+
         } else {
             Optional<UserData> userData = find(item.getUserId());
             if(userData.isPresent()) {
@@ -88,7 +95,7 @@ public class UserDataServiceDatabaseImpl implements UserDataService{
                 if(userData.get().getVersion().equals(item.getVersion())) {
                     item.setVersion(item.getVersion()+1);
                     item.setEditModeFlag(false);
-                    if(updateUser(item)){
+                    if(updateUser(item)) {
                         userMap.replace(userData.get().getUserId(), item);
                         return true;
                     }
@@ -98,8 +105,10 @@ public class UserDataServiceDatabaseImpl implements UserDataService{
         return false;
     }
 
-    public synchronized boolean addUser(UserData userData) {
+    public boolean addUser(UserData userData) {
         String query = "INSERT INTO user_data (name, last_name, phone_number, email, street, city, country, address, user_id, version, edit_mode_flag) values (?,?,?,?,?,?,?,?,?,?,?)";
+
+
         try (PreparedStatement preparedStatement = DatabaseConnectionUtil.getConnection().prepareStatement(query)) {
             preparedStatement.setString(1, userData.getName());
             preparedStatement.setString(2, userData.getLastName());
@@ -112,32 +121,37 @@ public class UserDataServiceDatabaseImpl implements UserDataService{
             preparedStatement.setString(9, userData.getUserId());
             preparedStatement.setInt(10, userData.getVersion());
             preparedStatement.setBoolean(11, userData.isEditModeFlag());
+
             return preparedStatement.executeUpdate() > 0;
+
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public synchronized boolean updateUser(UserData userData) {
-        String query = "UPDATE user_data SET name=?, last_name=?, phone_number=?, email=?, street=?, city=?, country=?, address=?, user_id=?, version=?, edit_mode_flag=? WHERE user_id=?";
-        try (PreparedStatement preparedStatement = DatabaseConnectionUtil.getConnection().prepareStatement(query)) {
-            preparedStatement.setString(1, userData.getName());
-            preparedStatement.setString(2, userData.getLastName());
-            preparedStatement.setString(3, userData.getPhoneNumber());
-            preparedStatement.setString(4, userData.getEmail());
-            preparedStatement.setString(5, userData.getStreet());
-            preparedStatement.setString(6, userData.getCity());
-            preparedStatement.setString(7, userData.getCountry());
-            preparedStatement.setString(8, userData.getAddress());
-            preparedStatement.setString(9, userData.getUserId());
-            preparedStatement.setInt(10, userData.getVersion());
-            preparedStatement.setBoolean(11, userData.isEditModeFlag());
+    public boolean updateUser(UserData userData) {
+        synchronized (userData.getUserId()) {
+            String query = "UPDATE user_data SET name=?, last_name=?, phone_number=?, email=?, street=?, city=?, country=?, address=?, user_id=?, version=?, edit_mode_flag=? WHERE user_id=?";
+            try (PreparedStatement preparedStatement = DatabaseConnectionUtil.getConnection().prepareStatement(query)) {
+                preparedStatement.setString(1, userData.getName());
+                preparedStatement.setString(2, userData.getLastName());
+                preparedStatement.setString(3, userData.getPhoneNumber());
+                preparedStatement.setString(4, userData.getEmail());
+                preparedStatement.setString(5, userData.getStreet());
+                preparedStatement.setString(6, userData.getCity());
+                preparedStatement.setString(7, userData.getCountry());
+                preparedStatement.setString(8, userData.getAddress());
+                preparedStatement.setString(9, userData.getUserId());
+                preparedStatement.setInt(10, userData.getVersion());
+                preparedStatement.setBoolean(11, userData.isEditModeFlag());
 
-            preparedStatement.setString(12, userData.getUserId());
-            return preparedStatement.executeUpdate() > 0;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+                preparedStatement.setString(12, userData.getUserId());
+                return preparedStatement.executeUpdate() > 0;
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
         }
+
     }
 
     @Override

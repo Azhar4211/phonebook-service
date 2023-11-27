@@ -98,7 +98,7 @@ public class UserDataProviderInMemory extends AbstractBackEndDataProvider<UserDa
 
     public void persist(UserData item) {
         if(userDataService.persist(item)){
-            refreshAll();
+            refreshItem(item);
         };
     }
 
