@@ -4,6 +4,8 @@ import lombok.Getter;
 import org.apache.commons.lang3.ObjectUtils;
 import org.vaadin.example.database.DatabaseConnectionUtil;
 import org.vaadin.example.model.UserData;
+
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -56,13 +58,21 @@ public class UserDataServiceDatabaseImpl implements UserDataService{
 
     public boolean delete(UserData userData) {
         String query = "delete from user_data where user_id= ?";
-        try (PreparedStatement preparedStatement = DatabaseConnectionUtil.getConnection().prepareStatement(query)) {
+        try {
+            Connection connection = DatabaseConnectionUtil.getConnection();
+            connection.setAutoCommit(false);
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
+
             preparedStatement.setString(1, userData.getUserId());
 
             if(preparedStatement.executeUpdate() <= 0) {
+                connection.commit();
+                connection.setAutoCommit(true);
                 return false;
             } else {
                 userMap.remove(userData.getUserId());
+                connection.commit();
+                connection.setAutoCommit(true);
                 return true;
             }
 
@@ -98,9 +108,15 @@ public class UserDataServiceDatabaseImpl implements UserDataService{
         return false;
     }
 
-    public synchronized boolean addUser(UserData userData) {
+    public boolean addUser(UserData userData) {
+
+
         String query = "INSERT INTO user_data (name, last_name, phone_number, email, street, city, country, address, user_id, version, edit_mode_flag) values (?,?,?,?,?,?,?,?,?,?,?)";
-        try (PreparedStatement preparedStatement = DatabaseConnectionUtil.getConnection().prepareStatement(query)) {
+        try {
+            Connection connection = DatabaseConnectionUtil.getConnection();
+            connection.setAutoCommit(false);
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
+
             preparedStatement.setString(1, userData.getName());
             preparedStatement.setString(2, userData.getLastName());
             preparedStatement.setString(3, userData.getPhoneNumber());
@@ -112,15 +128,27 @@ public class UserDataServiceDatabaseImpl implements UserDataService{
             preparedStatement.setString(9, userData.getUserId());
             preparedStatement.setInt(10, userData.getVersion());
             preparedStatement.setBoolean(11, userData.isEditModeFlag());
-            return preparedStatement.executeUpdate() > 0;
+
+            if(preparedStatement.executeUpdate() > 0 ) {
+                connection.commit();
+                connection.setAutoCommit(true);
+                return true;
+            }
+            else return false;
+
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public synchronized boolean updateUser(UserData userData) {
+    public boolean updateUser(UserData userData) {
+
         String query = "UPDATE user_data SET name=?, last_name=?, phone_number=?, email=?, street=?, city=?, country=?, address=?, user_id=?, version=?, edit_mode_flag=? WHERE user_id=?";
-        try (PreparedStatement preparedStatement = DatabaseConnectionUtil.getConnection().prepareStatement(query)) {
+        try {
+            Connection connection = DatabaseConnectionUtil.getConnection();
+            connection.setAutoCommit(false);
+
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
             preparedStatement.setString(1, userData.getName());
             preparedStatement.setString(2, userData.getLastName());
             preparedStatement.setString(3, userData.getPhoneNumber());
@@ -134,7 +162,13 @@ public class UserDataServiceDatabaseImpl implements UserDataService{
             preparedStatement.setBoolean(11, userData.isEditModeFlag());
 
             preparedStatement.setString(12, userData.getUserId());
-            return preparedStatement.executeUpdate() > 0;
+            if(preparedStatement.executeUpdate() > 0 ) {
+                connection.commit();
+                connection.setAutoCommit(true);
+                return true;
+            }
+            else return false;
+
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
